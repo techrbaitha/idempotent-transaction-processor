@@ -21,6 +21,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionValidator validator;
 
     private final TransactionRepository repository;
+    private final com.interview.transaction.service.ordering.OrderingService orderingService;
 
     @Override
     public TransactionResponse processTransaction(
@@ -49,6 +50,32 @@ public class TransactionServiceImpl implements TransactionService {
                     .processedAt(existingTransaction.getProcessedAt())
                     .retryCount(existingTransaction.getRetryCount())
                     .build();
+        }
+
+        if (!orderingService.isInSequence(request)) {
+
+            log.warn(
+
+                    "Out-of-order transaction detected : {}",
+
+                    request.getTransactionId());
+
+            return TransactionResponse.builder()
+
+                    .transactionId(request.getTransactionId())
+
+                    .requestId(request.getRequestId())
+
+                    .status(TransactionStatus.INVALID)
+
+                    .message("Transaction received out of sequence.")
+
+                    .processedAt(Instant.now())
+
+                    .retryCount(0)
+
+                    .build();
+
         }
 
         TransactionRecord transactionRecord =
