@@ -4,6 +4,7 @@ import com.interview.transaction.dto.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -12,16 +13,16 @@ import java.time.Instant;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(InvalidTransactionException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidTransactionException(
-            InvalidTransactionException ex,
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex,
             HttpServletRequest request) {
 
         ErrorResponse response = ErrorResponse.builder()
                 .timestamp(Instant.now())
                 .status(HttpStatus.BAD_REQUEST.value())
-                .error("Invalid Transaction")
-                .message(ex.getMessage())
+                .error("Invalid Request")
+                .message("Invalid JSON request. Please verify the request body and enum values.")
                 .path(request.getRequestURI())
                 .build();
 
