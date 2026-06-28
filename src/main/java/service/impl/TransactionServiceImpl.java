@@ -31,6 +31,26 @@ public class TransactionServiceImpl implements TransactionService {
 
         validator.validate(request);
 
+        TransactionRecord existingTransaction =
+                repository.findByTransactionId(
+                        request.getTransactionId());
+
+        if (existingTransaction != null) {
+
+            log.info(
+                    "Duplicate transaction detected : {}",
+                    request.getTransactionId());
+
+            return TransactionResponse.builder()
+                    .transactionId(request.getTransactionId())
+                    .requestId(request.getRequestId())
+                    .status(TransactionStatus.DUPLICATE)
+                    .message("Duplicate transaction ignored.")
+                    .processedAt(existingTransaction.getProcessedAt())
+                    .retryCount(existingTransaction.getRetryCount())
+                    .build();
+        }
+
         TransactionRecord transactionRecord =
                 TransactionRecord.builder()
                         .transactionRequest(request)
